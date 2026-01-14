@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Jaroslav's Game Collectie</title>
+    <script src="xlsx.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; text-align: center; }
+        .upload-box { background: #1e1e1e; padding: 40px; border-radius: 15px; border: 2px dashed #00ffcc; margin-bottom: 30px; }
+        
+        /* Zoekbalk met Reset-kruisje */
+        .search-container { margin-bottom: 25px; display: none; position: relative; max-width: 500px; margin-left: auto; margin-right: auto; }
+        #search-input { width: 100%; padding: 12px 45px 12px 20px; border-radius: 25px; border: 2px solid #333; background: #1e1e1e; color: white; font-size: 1em; outline: none; transition: 0.3s; box-sizing: border-box; }
+        #search-input:focus { border-color: #00ffcc; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); }
+        
+        #clear-search { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666; font-size: 20px; cursor: pointer; display: none; transition: 0.2s; }
+        #clear-search:hover { color: #00ffcc; }
+
+        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab-button { background: #333; color: white; border: none; padding: 12px 20px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        .tab-button.active { background: #00ffcc; color: #000; }
+        .tab-button.no-results { opacity: 0.3; pointer-events: none; }
+
+        .console-content { display: none; background: #1e1e1e; padding: 20px; border-radius: 12px; text-align: left; }
+        .console-content.active, .console-content.searching { display: block; }
+        
+        .group-section { border-left: 4px solid #00ffcc; padding: 15px; margin-bottom: 30px; background: #181818; border-radius: 8px; }
+        .ps-group { border-left-color: #00439c; } 
+        .pc-group { border-left-color: #f3af19; } 
+        .nintendo-group { border-left-color: #e60012; }
+        .xbox-group { border-left-color: #107c10; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px; }
+        th, td { padding: 12px; border-bottom: 1px solid #333; vertical-align: middle; }
+        th { color: #00ffcc; text-align: left; }
+        
+        .game-thumb { width: 50px; height: auto; border-radius: 4px; background: #333; display: block; }
+        .no-img { font-size: 0.7em; color: #666; }
+
+        h2 { border-bottom: 1px solid #333; padding-bottom: 5px; display: block; width: 100%; }
+        .hidden { display: none !important; }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎮 Mijn Game Collectie</h1>
+    
+    <div class="upload-box" id="drop-area">
+        <h3>Stap 1: Upload je Excel</h3>
+        <input type="file" id="upload" accept=".xlsx">
+    </div>
+
+    <div class="search-container" id="search-box">
+        <input type="text" id="search-input" placeholder="Zoek een spel in je hele collectie...">
+        <button id="clear-search" title="Zoekopdracht wissen">&times;</button>
+    </div>
+
+    <div id="tabs" class="tabs"></div>
+    <div id="content"></div>
+</div>
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const clearBtn = document.getElementById('clear-search');
+
+    document.getElementById('upload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet);
+            renderCollectie(json);
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    function renderCollectie(data) {
+        const groups = {};
+        data.forEach(row => {
+            const c = row.Console || "Onbekend";
+            if (!groups[c]) groups[c] = { games: [] };
+            groups[c].games.push(row);
+        });
+
+        const allConsoles = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+        
+        const isPS = (n) => n.toLowerCase().startsWith('ps') || n.toLowerCase().includes('playstation');
+        const isPC = (n) => {
+            const low = n.toLowerCase();
+            return low === 'pc' || low.includes('steam') || low.includes('epic') || low.includes('gog') || low.includes('disc');
+        };
+        const isNintendo = (n) => {
+            const low = n.toLowerCase();
+            return low.includes('nintendo') || low.includes('switch') || low.includes('ds') || low.includes('gba') || low.includes('gb') || low.includes('wii') || low.includes('gamecube');
+        };
+        const isXbox = (n) => n.toLowerCase().includes('xbox');
+
+        const families = [
+            { name: "PlayStation Family", list: allConsoles.filter(isPS), style: "ps-group" },
+            { name: "Nintendo World", list: allConsoles.filter(isNintendo), style: "nintendo-group" },
+            { name: "PC Gaming", list: allConsoles.filter(isPC), style: "pc-group" },
+            { name: "Xbox Family", list: allConsoles.filter(isXbox), style: "xbox-group" }
+        ];
+
+        const groupedNames = new Set();
+        families.forEach(f => f.list.forEach(name => groupedNames.add(name)));
+        const otherConsoles = allConsoles.filter(name => !groupedNames.has(name));
+
+        const tabs = document.getElementById('tabs');
+        const content = document.getElementById('content');
+        tabs.innerHTML = ""; content.innerHTML = "";
+
+        families.forEach(f => { if (f.list.length > 0) createTab(f.name, f.list, groups, f.style); });
+        otherConsoles.forEach(name => { createTab(name, [name], groups, ""); });
+
+        function createTab(tabName, consoleList, sourceData, extraClass) {
+            const tabIndex = document.querySelectorAll('.tab-button').length;
+            const btn = document.createElement('button');
+            btn.className = 'tab-button' + (tabIndex === 0 ? ' active' : '');
+            btn.innerText = tabName;
+            btn.dataset.tabId = 'tab-' + tabIndex;
+            
+            const div = document.createElement('div');
+            div.id = 'tab-' + tabIndex;
+            div.className = 'console-content' + (tabIndex === 0 ? ' active' : '');
+
+            btn.onclick = () => {
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.console-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                div.classList.add('active');
+            };
+
+            consoleList.forEach(cName => {
+                const consoleData = sourceData[cName];
+                consoleData.games.sort((a, b) => (a.Game_Titel || "").toLowerCase().localeCompare((b.Game_Titel || "").toLowerCase()));
+
+                let rows = consoleData.games.map(g => {
+                    const imgHtml = g.Foto_URL 
+                        ? `<img src="${g.Foto_URL}" class="game-thumb" onerror="this.style.display='none'">` 
+                        : `<span class="no-img">Geen foto</span>`;
+                        
+                    return `
+                    <tr class="game-row" data-title="${(g.Game_Titel || "").toLowerCase()}">
+                        <td style="width: 60px;">${imgHtml}</td>
+                        <td>${g.Game_Titel}</td>
+                        <td>€${Number(g.Prijs || 0).toFixed(2)}</td>
+                    </tr>`;
+                }).join('');
+
+                const section = document.createElement('div');
+                section.className = 'group-section ' + extraClass;
+                section.innerHTML = `
+                    <h2>${cName}</h2>
+                    <table>
+                        <thead><tr><th>Foto</th><th>Game</th><th>Prijs</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+                div.appendChild(section);
+            });
+            tabs.appendChild(btn);
+            content.appendChild(div);
+        }
+
+        document.getElementById('drop-area').style.display = 'none';
+        document.getElementById('search-box').style.display = 'block';
+
+        // Zoekfunctie
+        function applySearch() {
+            const term = searchInput.value.toLowerCase();
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.console-content');
+
+            clearBtn.style.display = term !== "" ? "block" : "none";
+
+            if (term === "") {
+                tabButtons.forEach(b => b.classList.remove('no-results'));
+                tabContents.forEach(c => c.classList.remove('searching'));
+                document.querySelectorAll('.game-row, .group-section').forEach(el => el.classList.remove('hidden'));
+                return;
+            }
+
+            tabContents.forEach(tabDiv => {
+                let tabHasMatch = false;
+                const sections = tabDiv.querySelectorAll('.group-section');
+
+                sections.forEach(section => {
+                    const rows = section.querySelectorAll('.game-row');
+                    let sectionHasMatch = false;
+
+                    rows.forEach(row => {
+                        const title = row.getAttribute('data-title');
+                        if (title.includes(term)) {
+                            row.classList.remove('hidden');
+                            sectionHasMatch = true;
+                            tabHasMatch = true;
+                        } else {
+                            row.classList.add('hidden');
+                        }
+                    });
+
+                    if (sectionHasMatch) section.classList.remove('hidden');
+                    else section.classList.add('hidden');
+                });
+
+                const btn = document.querySelector(`.tab-button[data-tab-id="${tabDiv.id}"]`);
+                if (tabHasMatch) {
+                    tabDiv.classList.add('searching');
+                    btn.classList.remove('no-results');
+                } else {
+                    tabDiv.classList.remove('searching');
+                    btn.classList.add('no-results');
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', applySearch);
+        
+        clearBtn.onclick = () => {
+            searchInput.value = "";
+            applySearch();
+            searchInput.focus();
+        };
+    }
+</script>
+</body>
+</html>
