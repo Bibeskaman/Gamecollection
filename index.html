@@ -6,33 +6,88 @@
     <script src="xlsx.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
-        .container { max-width: 1100px; margin: 0 auto; }
+        .container { max-width: 1100px; margin: 0 auto; text-align: center; }
         
-        /* Header layout: Titel links, Upload rechts */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-        .header h1 { margin: 0; font-size: 1.8em; color: #fff; }
+        /* Header sectie met zoekbalk en kleine upload knop */
+        .header-controls { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+            flex-wrap: wrap;
+        }
 
-        /* Kleine upload box aan de rechterkant */
-        .upload-box { background: #1e1e1e; padding: 10px 15px; border-radius: 10px; border: 1px dashed #00ffcc; display: flex; flex-direction: column; align-items: flex-end; }
-        .upload-box label { font-size: 0.8em; color: #00ffcc; margin-bottom: 5px; cursor: pointer; }
-        .upload-box input[type="file"] { font-size: 0.8em; color: #888; width: 180px; }
-        
-        /* Zoekbalk styling */
-        .search-container { margin-bottom: 25px; display: none; position: relative; max-width: 500px; margin-left: auto; margin-right: auto; }
-        #search-input { width: 100%; padding: 12px 45px 12px 20px; border-radius: 25px; border: 2px solid #333; background: #1e1e1e; color: white; font-size: 1em; outline: none; transition: 0.3s; box-sizing: border-box; }
+        .search-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 500px; 
+        }
+
+        #search-input { 
+            width: 100%; 
+            padding: 12px 45px 12px 20px; 
+            border-radius: 25px; 
+            border: 2px solid #333; 
+            background: #1e1e1e; 
+            color: white; 
+            font-size: 1em; 
+            outline: none; 
+            transition: 0.3s; 
+            box-sizing: border-box; 
+        }
+
         #search-input:focus { border-color: #00ffcc; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); }
         
-        #clear-search { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666; font-size: 20px; cursor: pointer; display: none; }
-        #clear-search:hover { color: #00ffcc; }
+        #clear-search { 
+            position: absolute; 
+            right: 15px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            background: none; 
+            border: none; 
+            color: #666; 
+            font-size: 20px; 
+            cursor: pointer; 
+            display: none; 
+        }
+
+        /* Compacte upload knop aan de rechterkant */
+        .mini-upload {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8em;
+            color: #888;
+            transition: 0.3s;
+        }
+        .mini-upload:hover { border-color: #00ffcc; color: #fff; }
+        #upload { display: none; }
+
+        /* Grote upload box (alleen zichtbaar als er GEEN database is) */
+        .upload-box { 
+            background: #1e1e1e; 
+            padding: 40px; 
+            border-radius: 15px; 
+            border: 2px dashed #00ffcc; 
+            margin-bottom: 30px; 
+            display: block;
+        }
 
         .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-        .tab-button { background: #333; color: white; border: none; padding: 10px 18px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        .tab-button { background: #333; color: white; border: none; padding: 12px 20px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.3s; }
         .tab-button.active { background: #00ffcc; color: #000; }
         .tab-button.no-results { opacity: 0.3; pointer-events: none; }
 
         .console-content { display: none; background: #1e1e1e; padding: 20px; border-radius: 12px; text-align: left; }
         .console-content.active, .console-content.searching { display: block; }
         
+        .filter-container { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-start; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .filter-btn { background: #2a2a2a; color: #aaa; border: 1px solid #444; padding: 6px 12px; cursor: pointer; border-radius: 5px; font-size: 0.9em; transition: 0.2s; }
+        .filter-btn:hover { border-color: #00ffcc; color: #fff; }
+
         .group-section { border-left: 4px solid #00ffcc; padding: 15px; margin-bottom: 30px; background: #181818; border-radius: 8px; }
         .ps-group { border-left-color: #00439c; } 
         .pc-group { border-left-color: #f3af19; } 
@@ -40,35 +95,41 @@
         .xbox-group { border-left-color: #107c10; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; border-bottom: 1px solid #333; vertical-align: middle; text-align: left; }
-        th { color: #00ffcc; }
+        th, td { padding: 12px; border-bottom: 1px solid #333; vertical-align: middle; }
+        th { color: #00ffcc; text-align: left; }
         
         .game-thumb { width: 50px; height: auto; border-radius: 4px; background: #333; display: block; }
         .no-img { font-size: 0.7em; color: #666; }
 
-        h2 { border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 0; }
-        #status-msg { text-align: center; margin-bottom: 10px; font-size: 0.9em; color: #00ffcc; min-height: 1.2em; }
-        
+        h2 { border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .hidden { display: none !important; }
         html { scroll-behavior: smooth; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>🎮 Mijn Game Collectie</h1>
-        
-        <div class="upload-box">
-            <label for="upload">Nieuwe Excel uploaden?</label>
-            <input type="file" id="upload" accept=".xlsx">
-        </div>
-    </div>
+    <h1>🎮 Mijn Game Collectie</h1>
     
-    <div id="status-msg"></div>
+    <div class="upload-box" id="full-upload-box">
+        <h3>Geen database gevonden</h3>
+        <p>Zorg dat 'database.xlsx' in de map staat of upload handmatig:</p>
+        <label class="mini-upload" style="font-size: 1.2em; padding: 15px 30px;">
+            📁 Selecteer Excel Bestand
+            <input type="file" id="upload-large" accept=".xlsx">
+        </label>
+    </div>
 
-    <div class="search-container" id="search-box">
-        <input type="text" id="search-input" placeholder="Zoek een spel...">
-        <button id="clear-search" title="Zoekopdracht wissen">&times;</button>
+    <div class="header-controls" id="controls" style="display: none;">
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Zoek een spel...">
+            <button id="clear-search">&times;</button>
+        </div>
+        
+        <label class="mini-upload" title="Ander bestand laden">
+            📁 Wissel Database
+            <input type="file" id="upload" accept=".xlsx">
+        </label>
     </div>
 
     <div id="tabs" class="tabs"></div>
@@ -78,48 +139,50 @@
 <script>
     const searchInput = document.getElementById('search-input');
     const clearBtn = document.getElementById('clear-search');
-    const statusMsg = document.getElementById('status-msg');
-
-    function processWorkbook(workbook) {
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(sheet);
-        renderCollectie(json);
-        document.getElementById('search-box').style.display = 'block';
-    }
+    const fullUploadBox = document.getElementById('full-upload-box');
+    const controls = document.getElementById('controls');
 
     // Automatisch database.xlsx laden
     window.addEventListener('DOMContentLoaded', () => {
-        statusMsg.innerText = "Laden van database.xlsx...";
         fetch('database.xlsx')
-            .then(response => {
-                if (!response.ok) throw new Error('Geen database.xlsx gevonden.');
-                return response.arrayBuffer();
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.arrayBuffer();
             })
             .then(data => {
                 const workbook = XLSX.read(new Uint8Array(data), {type: 'array'});
-                processWorkbook(workbook);
-                statusMsg.innerText = ""; // Bericht weg bij succes
+                processAndRender(workbook);
             })
-            .catch(err => {
-                statusMsg.innerText = "Geen automatische database gevonden. Upload handmatig.";
-                statusMsg.style.color = "#888";
+            .catch(() => {
+                console.log("Standaard database niet gevonden.");
             });
     });
 
-    // Handmatige upload
-    document.getElementById('upload').addEventListener('change', function(e) {
+    // Event listeners voor uploads
+    document.getElementById('upload').addEventListener('change', handleUpload);
+    document.getElementById('upload-large').addEventListener('change', handleUpload);
+
+    function handleUpload(e) {
         const file = e.target.files[0];
-        if(!file) return;
-        
         const reader = new FileReader();
         reader.onload = function(event) {
             const data = new Uint8Array(event.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
-            processWorkbook(workbook);
-            statusMsg.innerText = "Bestand '" + file.name + "' geladen.";
+            processAndRender(workbook);
         };
         reader.readAsArrayBuffer(file);
-    });
+    }
+
+    function processAndRender(workbook) {
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+        
+        // Wissel UI
+        fullUploadBox.style.display = 'none';
+        controls.style.display = 'flex';
+        
+        renderCollectie(json);
+    }
 
     function renderCollectie(data) {
         const groups = {};
@@ -129,17 +192,11 @@
             groups[c].games.push(row);
         });
 
-        const allConsoles = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+        const allConsoles = Object.keys(groups).sort();
         
-        const isPS = (n) => n.toLowerCase().startsWith('ps') || n.toLowerCase().includes('playstation');
-        const isPC = (n) => {
-            const low = n.toLowerCase();
-            return low === 'pc' || low.includes('steam') || low.includes('epic') || low.includes('gog') || low.includes('disc');
-        };
-        const isNintendo = (n) => {
-            const low = n.toLowerCase();
-            return low.includes('nintendo') || low.includes('switch') || low.includes('ds') || low.includes('gba') || low.includes('gb') || low.includes('wii') || low.includes('gamecube');
-        };
+        const isPS = (n) => n.toLowerCase().includes('ps') || n.toLowerCase().includes('playstation');
+        const isPC = (n) => n.toLowerCase().includes('pc') || n.toLowerCase().includes('steam');
+        const isNintendo = (n) => n.toLowerCase().includes('nintendo') || n.toLowerCase().includes('switch');
         const isXbox = (n) => n.toLowerCase().includes('xbox');
 
         const families = [
@@ -151,25 +208,25 @@
 
         const groupedNames = new Set();
         families.forEach(f => f.list.forEach(name => groupedNames.add(name)));
-        const otherConsoles = allConsoles.filter(name => !groupedNames.has(name));
+        const others = allConsoles.filter(name => !groupedNames.has(name));
 
         const tabs = document.getElementById('tabs');
         const content = document.getElementById('content');
         tabs.innerHTML = ""; content.innerHTML = "";
 
         families.forEach(f => { if (f.list.length > 0) createTab(f.name, f.list, groups, f.style); });
-        otherConsoles.forEach(name => { createTab(name, [name], groups, ""); });
+        others.forEach(name => createTab(name, [name], groups, ""));
 
         function createTab(tabName, consoleList, sourceData, extraClass) {
-            const tabIndex = document.querySelectorAll('.tab-button').length;
+            const tabId = 'tab-' + tabs.children.length;
             const btn = document.createElement('button');
-            btn.className = 'tab-button' + (tabIndex === 0 ? ' active' : '');
+            btn.className = 'tab-button' + (tabs.children.length === 0 ? ' active' : '');
             btn.innerText = tabName;
-            btn.dataset.tabId = 'tab-' + tabIndex;
+            btn.dataset.tabId = tabId;
             
             const div = document.createElement('div');
-            div.id = 'tab-' + tabIndex;
-            div.className = 'console-content' + (tabIndex === 0 ? ' active' : '');
+            div.id = tabId;
+            div.className = 'console-content' + (tabs.children.length === 0 ? ' active' : '');
 
             btn.onclick = () => {
                 document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
@@ -178,89 +235,77 @@
                 div.classList.add('active');
             };
 
-            consoleList.forEach(cName => {
-                const consoleData = sourceData[cName];
-                consoleData.games.sort((a, b) => (a.Game_Titel || "").toLowerCase().localeCompare((b.Game_Titel || "").toLowerCase()));
+            // Terugzetten van de filter knoppen (uit zoekbalk-oud.html)
+            if (consoleList.length > 1) {
+                const fContainer = document.createElement('div');
+                fContainer.className = 'filter-container';
+                fContainer.innerHTML = '<strong>Snel naar: </strong>';
+                consoleList.forEach(cName => {
+                    const fBtn = document.createElement('button');
+                    fBtn.className = 'filter-btn';
+                    fBtn.innerText = cName;
+                    const safeId = 'sec-' + tabId + '-' + cName.replace(/\s+/g, '-');
+                    fBtn.onclick = () => document.getElementById(safeId).scrollIntoView({ behavior: 'smooth' });
+                    fContainer.appendChild(fBtn);
+                });
+                div.appendChild(fContainer);
+            }
 
-                let rows = consoleData.games.map(g => {
-                    const imgHtml = g.Foto_URL 
-                        ? `<img src="${g.Foto_URL}" class="game-thumb" onerror="this.style.display='none'">` 
-                        : `<span class="no-img">Geen foto</span>`;
-                        
-                    return `
-                    <tr class="game-row" data-title="${(g.Game_Titel || "").toLowerCase()}">
-                        <td style="width: 60px;">${imgHtml}</td>
-                        <td>${g.Game_Titel}</td>
-                        <td>€${Number(g.Prijs || 0).toFixed(2)}</td>
+            consoleList.forEach(cName => {
+                const gData = sourceData[cName];
+                gData.games.sort((a,b) => (a.Game_Titel||"").localeCompare(b.Game_Titel||""));
+
+                let rows = gData.games.map(g => {
+                    const img = g.Foto_URL ? `<img src="${g.Foto_URL}" class="game-thumb" onerror="this.style.display='none'">` : `<span class="no-img">N/A</span>`;
+                    return `<tr class="game-row" data-title="${(g.Game_Titel||"").toLowerCase()}">
+                        <td>${img}</td><td>${g.Game_Titel}</td><td>€${Number(g.Prijs||0).toFixed(2)}</td>
                     </tr>`;
                 }).join('');
 
-                const section = document.createElement('div');
-                section.className = 'group-section ' + extraClass;
-                section.innerHTML = `
-                    <h2>${cName}</h2>
-                    <table>
-                        <thead><tr><th>Foto</th><th>Game</th><th>Prijs</th></tr></thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                `;
-                div.appendChild(section);
+                const sec = document.createElement('div');
+                sec.className = 'group-section ' + extraClass;
+                sec.id = 'sec-' + tabId + '-' + cName.replace(/\s+/g, '-');
+                sec.innerHTML = `<h2>${cName}</h2><table><thead><tr><th>Foto</th><th>Game</th><th>Prijs</th></tr></thead><tbody>${rows}</tbody></table>`;
+                div.appendChild(sec);
             });
             tabs.appendChild(btn);
             content.appendChild(div);
         }
     }
 
+    // Zoekfunctie logica
     function applySearch() {
         const term = searchInput.value.toLowerCase();
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.console-content');
+        clearBtn.style.display = term ? "block" : "none";
+        
+        document.querySelectorAll('.console-content').forEach(tabDiv => {
+            let tabMatch = false;
+            const filterContainer = tabDiv.querySelector('.filter-container');
+            if (filterContainer) filterContainer.style.display = term ? 'none' : 'flex';
 
-        clearBtn.style.display = term !== "" ? "block" : "none";
-
-        if (term === "") {
-            tabButtons.forEach(b => b.classList.remove('no-results'));
-            tabContents.forEach(c => c.classList.remove('searching'));
-            document.querySelectorAll('.game-row, .group-section').forEach(el => el.classList.remove('hidden'));
-            return;
-        }
-
-        tabContents.forEach(tabDiv => {
-            let tabHasMatch = false;
-            const sections = tabDiv.querySelectorAll('.group-section');
-
-            sections.forEach(section => {
-                const rows = section.querySelectorAll('.game-row');
-                let sectionHasMatch = false;
-
-                rows.forEach(row => {
-                    const title = row.getAttribute('data-title');
-                    if (title.includes(term)) {
-                        row.classList.remove('hidden');
-                        sectionHasMatch = true;
-                        tabHasMatch = true;
-                    } else {
-                        row.classList.add('hidden');
-                    }
+            tabDiv.querySelectorAll('.group-section').forEach(sec => {
+                let secMatch = false;
+                sec.querySelectorAll('.game-row').forEach(row => {
+                    const match = row.dataset.title.includes(term);
+                    row.classList.toggle('hidden', !match);
+                    if (match) secMatch = tabMatch = true;
                 });
-
-                if (sectionHasMatch) section.classList.remove('hidden');
-                else section.classList.add('hidden');
+                sec.classList.toggle('hidden', !secMatch);
             });
 
-            const btn = document.querySelector(`.tab-button[data-tab-id="${tabDiv.id}"]`);
-            if (tabHasMatch) {
-                tabDiv.classList.add('searching');
-                btn.classList.remove('no-results');
+            const btn = document.querySelector(`[data-tab-id="${tabDiv.id}"]`);
+            if (term) {
+                tabDiv.classList.toggle('searching', tabMatch);
+                btn.classList.toggle('no-results', !tabMatch);
             } else {
                 tabDiv.classList.remove('searching');
-                btn.classList.add('no-results');
+                btn.classList.remove('no-results');
             }
         });
     }
 
     searchInput.addEventListener('input', applySearch);
-    clearBtn.onclick = () => { searchInput.value = ""; applySearch(); searchInput.focus(); };
+    clearBtn.onclick = () => { searchInput.value = ""; applySearch(); };
 </script>
 </body>
 </html>
