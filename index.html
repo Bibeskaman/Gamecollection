@@ -7,11 +7,9 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: 0 auto; text-align: center; }
+        .upload-box { background: #1e1e1e; padding: 40px; border-radius: 15px; border: 2px dashed #00ffcc; margin-bottom: 30px; }
         
-        /* Upload box is nu kleiner en staat bovenaan als secundaire optie */
-        .upload-box { background: #1e1e1e; padding: 20px; border-radius: 15px; border: 1px dashed #333; margin-bottom: 20px; font-size: 0.9em; }
-        .upload-box h3 { margin-top: 0; font-size: 1.1em; color: #888; }
-        
+        /* Zoekbalk met Reset-kruisje */
         .search-container { margin-bottom: 25px; display: none; position: relative; max-width: 500px; margin-left: auto; margin-right: auto; }
         #search-input { width: 100%; padding: 12px 45px 12px 20px; border-radius: 25px; border: 2px solid #333; background: #1e1e1e; color: white; font-size: 1em; outline: none; transition: 0.3s; box-sizing: border-box; }
         #search-input:focus { border-color: #00ffcc; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); }
@@ -27,6 +25,11 @@
         .console-content { display: none; background: #1e1e1e; padding: 20px; border-radius: 12px; text-align: left; }
         .console-content.active, .console-content.searching { display: block; }
         
+        /* Filter knoppen styling */
+        .filter-container { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-start; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .filter-btn { background: #2a2a2a; color: #aaa; border: 1px solid #444; padding: 6px 12px; cursor: pointer; border-radius: 5px; font-size: 0.9em; transition: 0.2s; }
+        .filter-btn:hover { border-color: #00ffcc; color: #fff; }
+
         .group-section { border-left: 4px solid #00ffcc; padding: 15px; margin-bottom: 30px; background: #181818; border-radius: 8px; }
         .ps-group { border-left-color: #00439c; } 
         .pc-group { border-left-color: #f3af19; } 
@@ -42,7 +45,6 @@
 
         h2 { border-bottom: 1px solid #333; padding-bottom: 5px; display: block; width: 100%; }
         .hidden { display: none !important; }
-        #status-msg { margin-bottom: 10px; color: #00ffcc; font-style: italic; }
         html { scroll-behavior: smooth; }
     </style>
 </head>
@@ -51,10 +53,8 @@
 <div class="container">
     <h1>🎮 Mijn Game Collectie</h1>
     
-    <div id="status-msg">Bezig met laden van database...</div>
-
     <div class="upload-box" id="drop-area">
-        <h3>Ander bestand gebruiken?</h3>
+        <h3>Stap 1: Upload je Excel</h3>
         <input type="file" id="upload" accept=".xlsx">
     </div>
 
@@ -70,47 +70,19 @@
 <script>
     const searchInput = document.getElementById('search-input');
     const clearBtn = document.getElementById('clear-search');
-    const statusMsg = document.getElementById('status-msg');
 
-    // 1. Probeer automatisch 'database.xlsx' te laden bij het opstarten
-    window.addEventListener('DOMContentLoaded', () => {
-        fetch('database.xlsx')
-            .then(response => {
-                if (!response.ok) throw new Error('Geen database.xlsx gevonden');
-                return response.arrayBuffer();
-            })
-            .then(data => {
-                const workbook = XLSX.read(new Uint8Array(data), {type: 'array'});
-                processWorkbook(workbook);
-                statusMsg.innerText = "Standaard database geladen.";
-                setTimeout(() => statusMsg.style.display = 'none', 3000);
-            })
-            .catch(err => {
-                console.log(err.message);
-                statusMsg.innerText = "Upload handmatig je Excel bestand.";
-                statusMsg.style.color = "#888";
-            });
-    });
-
-    // 2. Handmatige upload verwerken
     document.getElementById('upload').addEventListener('change', function(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = function(event) {
             const data = new Uint8Array(event.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
-            processWorkbook(workbook);
-            statusMsg.innerText = "Bestand succesvol geüpload.";
-            statusMsg.style.display = 'block';
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet);
+            renderCollectie(json);
         };
         reader.readAsArrayBuffer(file);
     });
-
-    function processWorkbook(workbook) {
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(sheet);
-        renderCollectie(json);
-    }
 
     function renderCollectie(data) {
         const groups = {};
@@ -169,6 +141,23 @@
                 div.classList.add('active');
             };
 
+            // VOEG FILTER KNOPPEN TOE (zoals in zoekbalk-oud.html)
+            if (consoleList.length > 1) {
+                const filterContainer = document.createElement('div');
+                filterContainer.className = 'filter-container';
+                filterContainer.innerHTML = '<strong>Snel naar: </strong>';
+                consoleList.forEach(cName => {
+                    const fBtn = document.createElement('button');
+                    fBtn.className = 'filter-btn';
+                    fBtn.innerText = cName;
+                    // Maak een veilig ID aan voor scrollen
+                    const safeId = 'sec-' + tabIndex + '-' + cName.replace(/\s+/g, '-');
+                    fBtn.onclick = () => document.getElementById(safeId).scrollIntoView({ behavior: 'smooth' });
+                    filterContainer.appendChild(fBtn);
+                });
+                div.appendChild(filterContainer);
+            }
+
             consoleList.forEach(cName => {
                 const consoleData = sourceData[cName];
                 consoleData.games.sort((a, b) => (a.Game_Titel || "").toLowerCase().localeCompare((b.Game_Titel || "").toLowerCase()));
@@ -188,6 +177,8 @@
 
                 const section = document.createElement('div');
                 section.className = 'group-section ' + extraClass;
+                // Unieke ID voor de scroll-to functie
+                section.id = 'sec-' + tabIndex + '-' + cName.replace(/\s+/g, '-');
                 section.innerHTML = `
                     <h2>${cName}</h2>
                     <table>
@@ -201,6 +192,7 @@
             content.appendChild(div);
         }
 
+        document.getElementById('drop-area').style.display = 'none';
         document.getElementById('search-box').style.display = 'block';
 
         // Zoekfunctie
@@ -214,13 +206,17 @@
             if (term === "") {
                 tabButtons.forEach(b => b.classList.remove('no-results'));
                 tabContents.forEach(c => c.classList.remove('searching'));
-                document.querySelectorAll('.game-row, .group-section').forEach(el => el.classList.remove('hidden'));
+                document.querySelectorAll('.game-row, .group-section, .filter-container').forEach(el => el.classList.remove('hidden'));
                 return;
             }
 
             tabContents.forEach(tabDiv => {
                 let tabHasMatch = false;
                 const sections = tabDiv.querySelectorAll('.group-section');
+                
+                // Verberg de "Snel naar" knoppen tijdens het zoeken voor meer overzicht
+                const filterCont = tabDiv.querySelector('.filter-container');
+                if (filterCont) filterCont.classList.add('hidden');
 
                 sections.forEach(section => {
                     const rows = section.querySelectorAll('.game-row');
