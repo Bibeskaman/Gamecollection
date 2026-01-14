@@ -7,9 +7,11 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: 0 auto; text-align: center; }
-        .upload-box { background: #1e1e1e; padding: 40px; border-radius: 15px; border: 2px dashed #00ffcc; margin-bottom: 30px; }
         
-        /* Zoekbalk met Reset-kruisje */
+        /* Upload box is nu kleiner en staat bovenaan als secundaire optie */
+        .upload-box { background: #1e1e1e; padding: 20px; border-radius: 15px; border: 1px dashed #333; margin-bottom: 20px; font-size: 0.9em; }
+        .upload-box h3 { margin-top: 0; font-size: 1.1em; color: #888; }
+        
         .search-container { margin-bottom: 25px; display: none; position: relative; max-width: 500px; margin-left: auto; margin-right: auto; }
         #search-input { width: 100%; padding: 12px 45px 12px 20px; border-radius: 25px; border: 2px solid #333; background: #1e1e1e; color: white; font-size: 1em; outline: none; transition: 0.3s; box-sizing: border-box; }
         #search-input:focus { border-color: #00ffcc; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); }
@@ -40,6 +42,7 @@
 
         h2 { border-bottom: 1px solid #333; padding-bottom: 5px; display: block; width: 100%; }
         .hidden { display: none !important; }
+        #status-msg { margin-bottom: 10px; color: #00ffcc; font-style: italic; }
         html { scroll-behavior: smooth; }
     </style>
 </head>
@@ -48,8 +51,10 @@
 <div class="container">
     <h1>🎮 Mijn Game Collectie</h1>
     
+    <div id="status-msg">Bezig met laden van database...</div>
+
     <div class="upload-box" id="drop-area">
-        <h3>Stap 1: Upload je Excel</h3>
+        <h3>Ander bestand gebruiken?</h3>
         <input type="file" id="upload" accept=".xlsx">
     </div>
 
@@ -65,19 +70,47 @@
 <script>
     const searchInput = document.getElementById('search-input');
     const clearBtn = document.getElementById('clear-search');
+    const statusMsg = document.getElementById('status-msg');
 
+    // 1. Probeer automatisch 'database.xlsx' te laden bij het opstarten
+    window.addEventListener('DOMContentLoaded', () => {
+        fetch('database.xlsx')
+            .then(response => {
+                if (!response.ok) throw new Error('Geen database.xlsx gevonden');
+                return response.arrayBuffer();
+            })
+            .then(data => {
+                const workbook = XLSX.read(new Uint8Array(data), {type: 'array'});
+                processWorkbook(workbook);
+                statusMsg.innerText = "Standaard database geladen.";
+                setTimeout(() => statusMsg.style.display = 'none', 3000);
+            })
+            .catch(err => {
+                console.log(err.message);
+                statusMsg.innerText = "Upload handmatig je Excel bestand.";
+                statusMsg.style.color = "#888";
+            });
+    });
+
+    // 2. Handmatige upload verwerken
     document.getElementById('upload').addEventListener('change', function(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = function(event) {
             const data = new Uint8Array(event.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet);
-            renderCollectie(json);
+            processWorkbook(workbook);
+            statusMsg.innerText = "Bestand succesvol geüpload.";
+            statusMsg.style.display = 'block';
         };
         reader.readAsArrayBuffer(file);
     });
+
+    function processWorkbook(workbook) {
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+        renderCollectie(json);
+    }
 
     function renderCollectie(data) {
         const groups = {};
@@ -168,7 +201,6 @@
             content.appendChild(div);
         }
 
-        document.getElementById('drop-area').style.display = 'none';
         document.getElementById('search-box').style.display = 'block';
 
         // Zoekfunctie
