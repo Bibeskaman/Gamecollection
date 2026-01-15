@@ -38,3 +38,25 @@ Je Excel-bestand moet de volgende kolommen bevatten op de eerste rij:
 ├── Foto_URL       (optioneel: je eigen afbeelding link)
 ├── Game_Titel     (de naam van het spel)
 └── Prijs          (de waarde van het spel)
+```
+
+## <a name="how-to-use"></a>Hoe te gebruiken 🏃
+1. **Voorbereiden**: Zorg dat je games in het bovenstaande Excel-formaat staan. Voor PlayStation-covers gebruik je de ID in de titel, bijv: `The Last of Us [BCES01584]`.
+2. **Inladen**: Open de live website en selecteer je Excel-bestand via de upload-knop.
+3. **Navigeren**: Gebruik de tabs om per merk te filteren en de sidebar voor je financiële overzicht.
+
+## <a name="features"></a>Kernfunctionaliteiten 🐦‍🔥
+
+### <a name="filtering"></a>Slimme Filters & Merken 🔍
+De app groepeert je games automatisch op basis van merk-families en specifieke consoles:
+
+* **Merk-groepering**: Schakel direct tussen categorieën zoals PlayStation Family, Nintendo World, PC Gaming en Xbox.
+* **Sub-filters**: Verfijn je weergave binnen een merk (bijv. toon enkel je PS3 games binnen de PlayStation tab).
+* **Real-time Zoekfunctie**: Filter je hele collectie op titel terwijl je typt.
+
+### <a name="sidebar-stats"></a>Collectie Waarde & Stats 📈
+Houd de financiële waarde van je hobby nauwkeurig bij via de interactieve sidebar:
+
+* **Totaalwaarde**: Zie in één oogopslag wat je volledige collectie waard is in Euro's.
+* **Sectie-analyse**: Bekijk de waarde en het aantal games specifiek per console (bijv. "Totaalwaarde PS2 games: €450,-").
+* **Automatische Updates**: De bedragen worden direct herberekend zodra je een nieuw bestand inlaadt of filters aanpast.
