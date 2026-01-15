@@ -1,6 +1,6 @@
-# Game Collection Manager 🎮
+# Game Collection Manager 🎮 (PRIVE GEBRUIK)
 
-<img src="https://img.icons8.com/fluent/200/000000/game-controller.png" align="right" width="150" alt="Game Logo" title="Game Logo">
+<img src="https://toppng.com/uploads/preview/ps3-png-11553942291zpowxqdmqw.png" align="right" width="150" alt="Game Logo" title="Game Logo">
 Een moderne, interactieve web-app om je gameverzameling te beheren. Transformeer je simpele Excel-database in een visueel dashboard met automatische covers, prijsberekeningen en geavanceerde filters.
 
 ## 🌐 **[BEKIJK DE LIVE WEBSITE HIER](https://bibeskaman.github.io/Gamecollection/)**
