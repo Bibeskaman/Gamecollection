@@ -1,33 +1,40 @@
-**🎮 Mijn Game Collectie**
+# Game Collection Manager 🎮
 
-Beheer en bekijk je volledige gameverzameling op één centrale plek: **https://bibeskaman.github.io/Gamecollection/**
+<img src="https://img.icons8.com/fluent/200/000000/game-controller.png" align="right" width="150" alt="Game Logo" title="Game Logo">
+Een moderne, interactieve web-app om je gameverzameling te beheren. Transformeer je simpele Excel-database in een visueel dashboard met automatische covers, prijsberekeningen en geavanceerde filters.
 
-**🌐 BEKIJK DE WEBSITE HIER**
-📝 Wat kun je hiermee?
+## 🌐 **[BEKIJK DE LIVE WEBSITE HIER](https://bibeskaman.github.io/Gamecollection/)**
 
-Deze website is speciaal ontworpen om je Excel-gebaseerde game-database om te zetten in een visueel overzichtelijke collectie. Of je nu PlayStation, Nintendo of PC games verzamelt, de site ordent alles automatisch voor je.
+### Table of Contents 🤸
 
-**🚀 Hoe werkt het?**
- 
-  Uploaden: Klik op de uploadknop en selecteer je database.xlsx bestand.
+- [Quick Start for Collectors 🐢](#quick-start-for-collectors)
+    - [Requirements 📝](#requirements)
+    - [Excel Structure 🛠️](#excel-structure)
+    - [How to Use 🏃](#how-to-use)
 
-  Automatische Covers: De website zoekt zelf naar covers in online repositories voor PlayStation, PC en andere consoles op basis van de titel of de Title ID (bijv. BLES01807).
+- [Features 🐦‍🔥](#features)
+    - [Filtering 🔍](#filtering)
+    - [Sidebar Stats 📈](#sidebar-stats)
 
-  Zoeken & Filteren: Gebruik de krachtige zoekbalk om door je hele collectie te zoeken, of gebruik de console-filters om specifiek per platform te kijken.
+## <a name="quick-start-for-collectors">Quick Start for Collectors 🐢</a>
 
-  Overzicht: Open de sidebar voor een directe berekening van het totaal aantal games en de totale waarde van je collectie.
+### <a name="requirements">Requirements 📝</a>
 
-**📊 Excel Structuur**
+De applicatie werkt volledig in de browser. Je hebt geen ingewikkelde software nodig, alleen je eigen game-database.
 
-Voor de beste ervaring moet je Excel-bestand de volgende kolommen bevatten op de eerste rij:
+Zorg dat je het volgende hebt voorbereid:
 
-  Console: Het platform (bijv. PS3, Switch).
-  
-  Game_Titel: De naam van de game (tip: voeg de [Title ID] toe voor betere covers).
-  
-  Prijs: De huidige waarde van de game.
-  
-  Foto_URL: (Optioneel) Een eigen link naar een afbeelding.
+| Requirement               | Description                                          |
+| ------------------------- | ---------------------------------------------------- |
+| **Excel Bestand** | Een `.xlsx` bestand met je gamegegevens.             |
+| **Modern Browser** | Chrome, Firefox of Edge voor de beste ervaring.      |
+| **Internetverbinding** | Nodig om online database op te halen.                  |
 
+### <a name="excel-structure"></a>Excel Structure 🛠️
 
-Zou je willen dat ik de tekst in de README nog verder uitbreid met een specifieke sectie over hoe je de Title ID's het beste kunt noteren voor de covers?
+Je Excel-bestand moet de volgende kolommen bevatten op de eerste rij:
+```console
+├── Console        (bijv. PS3, Switch, PC)
+├── Foto_URL       (optioneel: je eigen afbeelding link)
+├── Game_Titel     (de naam van het spel)
+└── Prijs          (de waarde van het spel)
