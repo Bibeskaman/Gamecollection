@@ -117,12 +117,13 @@
         <p>Maak een tabblad genaamd "Hardware" aan met deze koppen:</p>
         <div class="excel-layout hw">Hardware | Hardware_Titel | Prijs | Extra</div>
         <ul class="info-list hw">
-            <li><strong>Hardware:</strong> Categorie (bijv. PS5, Xbox). Bepaalt het logo.</li>
+            <li><strong>Hardware:</strong> Categorie (bijv. PS5, Xbox).</li>
             <li><strong>Hardware_Titel:</strong> Naam van het item (bijv. SCPH-7502).</li>
             <li><strong>Prijs:</strong> Waarde van het hardware item.</li>
             <li><strong>Extra:</strong> Informatie die direct in de tabel verschijnt.</li>
         </ul>
-        <p style="margin-top: 20px; font-style: italic; font-size: 0.9em; color: #888;">Script zoekt automatisch logo's in /Logo/.</p>
+        <p style="margin-top: 20px; border-top: 1px solid #333; padding-top: 10px; color: #00ffcc; font-weight: bold;">🖼️ Logo Informatie</p>
+        <p style="font-size: 0.95em;">Het script zoekt automatisch naar afbeeldingen in de map <code style="color:#00ffcc;">/Logo/</code>. De foto wordt <strong>automatisch toegepast</strong> als de bestandsnaam in de map exact overeenkomt met de <strong>Console</strong> of <strong>Hardware</strong> naam die je in Excel hebt ingevuld (bijv. <em>PS2.png</em> voor console "PS2").</p>
     </div>
 </div>
 
@@ -137,9 +138,9 @@
 <div class="container" id="main">
     <h1>🎮 Mijn Game & Hardware Collectie</h1>
     <div class="upload-box" id="full-upload-box">
-        <h3>Geen database gevonden</h3>
+        <h3>Database laden...</h3>
         <div class="header-controls">
-            <label class="mini-upload" style="font-size: 1.2em; padding: 15px 30px;">📂 Selecteer Excel Bestand<input type="file" id="upload-large" accept=".xlsx" style="display:none;"></label>
+            <label class="mini-upload" style="font-size: 1.2em; padding: 15px 30px;">📂 Handmatig Excel Selecteren<input type="file" id="upload-large" accept=".xlsx" style="display:none;"></label>
             <button class="info-btn" onclick="openModal()">i</button>
         </div>
     </div>
@@ -164,16 +165,32 @@
     const extensions = ['png', 'svg', 'webp', 'jpg', 'jpeg'];
     let lastActiveTabId = null;
 
+    // Automatisch laden van database.xlsx bij opstarten
+    window.addEventListener('DOMContentLoaded', () => {
+        fetch('database.xlsx')
+            .then(response => {
+                if (!response.ok) throw new Error('Geen automatische database gevonden');
+                return response.arrayBuffer();
+            })
+            .then(data => {
+                processData(XLSX.read(new Uint8Array(data), {type: 'array'}));
+            })
+            .catch(err => {
+                console.log(err.message);
+                document.querySelector('#full-upload-box h3').innerText = "Geen database gevonden";
+            });
+    });
+
     function getLogoPath(consoleName) {
         let name = (consoleName || "").trim();
         let lowerName = name.toLowerCase();
         if (lowerName === 'pc' || lowerName.includes('steam') || lowerName.includes('epic') || lowerName.includes('gog')) {
              if (lowerName.includes('steam')) name = 'STEAM';
-             else if (lowerName.includes('epic')) name = 'EPIC';
+             else if (lowerName.includes('epic')) name = 'epic';
              else if (lowerName.includes('gog')) name = 'GOG';
              else name = 'PC';
         }
-        return `Logo/${name}-logo`;
+        return `Logo/${name}`;
     }
 
     function handleImgError(img, isHardware) {
@@ -264,10 +281,7 @@
         const btn = document.createElement('button');
         btn.className = 'tab-button' + (isActive ? ' ' + activeClass : '');
         
-        // Specifieke klasse voor de hardware tab
-        if (isHardware) {
-            btn.classList.add('hardware-tab-special');
-        }
+        if (isHardware) { btn.classList.add('hardware-tab-special'); }
 
         btn.innerText = title;
         btn.dataset.tabId = id;
@@ -422,4 +436,3 @@
 </script>
 </body>
 </html>
-
