@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Jaroslav's Game Collectie</title>
+    <title>Jaroslav's Game & Hardware Collectie</title>
     <script src="xlsx.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 20px; overflow-x: hidden; }
@@ -10,107 +10,149 @@
         
         /* Sidebar */
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 1000; top: 0; left: 0; background-color: #1a1a1a; overflow-x: hidden; transition: 0.3s; padding-top: 60px; border-right: 1px solid #333; text-align: left; }
-        .sidebar-content { padding: 20px; min-width: 300px; }
+        .sidebar-content { padding: 20px; min-width: 310px; }
         .closebtn { position: absolute; top: 10px; right: 25px; font-size: 36px; color: #888; text-decoration: none; cursor: pointer; }
         .openbtn { font-size: 18px; cursor: pointer; background-color: #1e1e1e; color: #00ffcc; padding: 10px 15px; border: 1px solid #333; border-radius: 8px; position: fixed; top: 20px; left: 20px; z-index: 999; }
 
-        /* Header & Controls */
+        #sidebar-summary table { width: 100%; border-collapse: collapse; }
+        #sidebar-summary th, #sidebar-summary td { padding: 10px 5px; border-bottom: 1px solid #333; text-align: left; }
+
+        /* Familie Kleuren */
+        .ps-group { border-left-color: #003791 !important; }
+        .tab-button.ps-active { background: #003791 !important; color: white !important; }
+        .nintendo-group { border-left-color: #e60012 !important; }
+        .tab-button.nintendo-active { background: #e60012 !important; color: white !important; }
+        .xbox-group { border-left-color: #107c10 !important; }
+        .tab-button.xbox-active { background: #107c10 !important; color: white !important; }
+        .pc-group { border-left-color: #616161 !important; }
+        .tab-button.pc-active { background: #616161 !important; color: white !important; }
+        .hardware-group { border-left-color: #ffcc00 !important; }
+        .tab-button.hardware-active { background: #ffcc00 !important; color: #000 !important; }
+
+        /* Filter Kleuren */
+        .ps-active-style .filter-btn.active { background: #003791 !important; color: white !important; border-color: #003791 !important; }
+        .nintendo-active-style .filter-btn.active { background: #e60012 !important; color: white !important; border-color: #e60012 !important; }
+        .xbox-active-style .filter-btn.active { background: #107c10 !important; color: white !important; border-color: #107c10 !important; }
+        .pc-active-style .filter-btn.active { background: #616161 !important; color: white !important; border-color: #616161 !important; }
+        .hardware-active-style .filter-btn.active { background: #ffcc00 !important; color: #000 !important; border-color: #ffcc00 !important; }
+
+        /* Zoekbalk */
         .header-controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; margin-top: 20px; flex-wrap: wrap; }
         .search-container { position: relative; width: 100%; max-width: 500px; }
         #search-input { width: 100%; padding: 12px 45px 12px 20px; border-radius: 25px; border: 2px solid #333; background: #1e1e1e; color: white; font-size: 1em; outline: none; box-sizing: border-box; }
         #clear-search { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666; font-size: 20px; cursor: pointer; display: none; }
 
-        /* Upload & Info */
-        .upload-wrapper { display: flex; align-items: center; gap: 10px; }
         .mini-upload { background: #1e1e1e; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.8em; color: #888; }
         .info-btn { background: #333; color: #00ffcc; border: 1px solid #00ffcc; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-        
-        #upload, #upload-large { display: none; }
         .upload-box { background: #1e1e1e; padding: 40px; border-radius: 15px; border: 2px dashed #00ffcc; margin-bottom: 30px; }
+
+        /* Tabs */
+        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; align-items: center; }
+        .tab-button { background: #252525; color: white; border: 1px solid #333; padding: 10px 18px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        
+        /* Hardware tab grafisch apart zetten */
+        .tab-button.hardware-tab-special { 
+            margin-left: 25px; 
+            border-left: 3px solid #ffcc00; 
+        }
+
+        .tabs.searching-active .tab-button { pointer-events: none; opacity: 0.5; }
+
+        .console-content { display: none; background: #1e1e1e; padding: 20px; border-radius: 12px; text-align: left; margin-top: 10px; }
+        .console-content.active, .console-content.searching { display: block; }
+        .group-section { border-left: 4px solid #00ffcc; padding: 15px; margin-bottom: 30px; background: #181818; border-radius: 8px; }
+        
+        .searching .filter-container { display: none !important; }
+
+        .main-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .main-table th, .main-table td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
+        .game-row.hidden, .group-section.hidden { display: none; }
+        
+        .col-foto { width: 80px; text-align: center; }
+        .col-prijs { width: 160px; }
+        .game-thumb { width: 50px; height: auto; border-radius: 4px; }
+        .hardware-thumb { width: 100px; height: auto; border-radius: 4px; }
+
+        .digital-label { font-size: 0.8em; color: #888; margin-left: 5px; font-style: italic; }
+
+        .extra-info-trigger { cursor: help; color: #00ffcc; position: relative; display: inline-block; margin-left: 5px; }
+        .tooltip-text { 
+            visibility: hidden; width: 180px; background-color: #000; color: #fff; text-align: center; 
+            border: 1px solid #00ffcc; border-radius: 6px; padding: 8px; position: absolute; z-index: 100; 
+            bottom: 150%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s; 
+            font-size: 0.85em; font-weight: normal; 
+        }
+        .tooltip-text::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #00ffcc transparent transparent transparent; }
+        .extra-info-trigger:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+        #backToTop { display: none; position: fixed; bottom: 30px; right: 30px; z-index: 99; border: none; outline: none; background-color: #00ffcc; color: black; cursor: pointer; padding: 15px; border-radius: 50%; width: 50px; height: 50px; font-size: 20px; font-weight: bold; box-shadow: 0px 4px 10px rgba(0,0,0,0.5); }
 
         /* Modal */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); }
-        .modal-content { background-color: #1e1e1e; margin: 10% auto; padding: 30px; border: 1px solid #00ffcc; border-radius: 15px; width: 80%; max-width: 600px; text-align: left; position: relative; }
-        .close-modal { position: absolute; top: 15px; right: 20px; color: #888; font-size: 24px; cursor: pointer; }
-
-        /* Tabs & Filters */
-        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
-        .tab-button { background: #252525; color: white; border: 1px solid #333; padding: 10px 18px; cursor: pointer; border-radius: 8px; font-weight: bold; }
-        .tab-button.active { background: #00ffcc; color: #000; border-color: #00ffcc; }
-        .tab-button.no-results { opacity: 0.2; pointer-events: none; }
-
-        .filter-container { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; background: #1a1a1a; padding: 10px; border-radius: 8px; }
-        .filter-btn { background: #333; color: #00ffcc; border: 1px solid #444; padding: 6px 15px; cursor: pointer; border-radius: 20px; font-size: 0.85em; transition: 0.2s; }
-        .filter-btn:hover, .filter-btn.active { background: #00ffcc; color: #000; border-color: #00ffcc; }
-
-        .console-content { display: none; background: #1e1e1e; padding: 20px; border-radius: 12px; text-align: left; }
-        .console-content.active, .console-content.searching { display: block; }
-        
-        .group-section { border-left: 4px solid #00ffcc; padding: 15px; margin-bottom: 30px; background: #181818; border-radius: 8px; }
-        .ps-group { border-left-color: #00439c; } 
-        .nintendo-group { border-left-color: #e60012; }
-        .pc-group { border-left-color: #f3af19; } 
-        .xbox-group { border-left-color: #107c10; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
-        th { color: #00ffcc; }
-        .game-thumb { width: 50px; height: auto; border-radius: 4px; }
-        .hidden { display: none !important; }
+        .modal-content { background-color: #1e1e1e; margin: 5% auto; padding: 30px; border: 1px solid #00ffcc; border-radius: 15px; width: 85%; max-width: 800px; text-align: left; overflow-y: auto; max-height: 85vh; }
+        .excel-layout { background: #000; color: #00ffcc; padding: 10px; border-radius: 5px; font-family: monospace; text-align: center; margin: 15px 0; border: 1px solid #333; }
+        .excel-layout.hw { color: #ffcc00; border-color: #ffcc00; }
+        .info-list li { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; list-style: none; }
+        .info-list strong { color: #00ffcc; width: 120px; display: inline-block; }
+        .info-list.hw strong { color: #ffcc00; }
     </style>
 </head>
 <body>
 
 <div id="infoModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeModal()">&times;</span>
-        <h2>Excel Structuur Uitleg</h2>
-        <p>Voor een juiste werking moet je Excel-bestand de volgende <strong>kolomnamen</strong> hebben op de eerste rij:</p>
-        <ul style="list-style:none; padding:0;">
-            <li><strong>1. Console</strong>: De console (bijv. PS5, Switch, DS, GBA).</li>
-            <li><strong>2. Foto_URL</strong> (Optioneel): Een link naar een afbeelding.</li>
-            <li><strong>3. Game_Titel</strong>: De naam van het spel.</li>
-            <li><strong>4. Prijs</strong>: De waarde (alleen getallen).</li>
+        <span style="float:right; cursor:pointer; font-size:28px;" onclick="closeModal()">&times;</span>
+        <p style="color: #00ffcc; font-weight: bold; margin-bottom: 20px;">De database moet een Excel-bestand (.xlsx) zijn.</p>
+        <h3 style="color:#00ffcc; border-bottom: 1px solid #333;">🎮 Games Bladen</h3>
+        <p>Gebruik een blad per console of één verzamelblad met deze koppen:</p>
+        <div class="excel-layout">Console | Game_Titel | Prijs | Digital | Extra</div>
+        <ul class="info-list">
+            <li><strong>Console:</strong> Systeemnaam (bijv. PS1, PS2, Switch, PC).</li>
+            <li><strong>Game_Titel:</strong> Naam van het spel.</li>
+            <li><strong>Prijs:</strong> Waarde marktprijs (bijv. 19.99).</li>
+            <li><strong>Digital:</strong> Zet een <strong>x</strong> voor digitale games (icoon: 💾).</li>
+            <li><strong>Extra:</strong> Info (zoals "Enkel Disc"). Verschijnt als 💬 bubbel.</li>
         </ul>
-        <p><em>Voorbeeld: Console | Foto_URL | Game_Titel | Prijs</em></p>
+        <h3 style="color:#ffcc00; border-bottom: 1px solid #333; margin-top:20px;">🕹️ Hardware Blad</h3>
+        <p>Maak een tabblad genaamd "Hardware" aan met deze koppen:</p>
+        <div class="excel-layout hw">Hardware | Hardware_Titel | Prijs | Extra</div>
+        <ul class="info-list hw">
+            <li><strong>Hardware:</strong> Categorie (bijv. PS5, Xbox). Bepaalt het logo.</li>
+            <li><strong>Hardware_Titel:</strong> Naam van het item (bijv. SCPH-7502).</li>
+            <li><strong>Prijs:</strong> Waarde van het hardware item.</li>
+            <li><strong>Extra:</strong> Informatie die direct in de tabel verschijnt.</li>
+        </ul>
+        <p style="margin-top: 20px; font-style: italic; font-size: 0.9em; color: #888;">Script zoekt automatisch logo's in /Logo/.</p>
     </div>
 </div>
 
 <div id="mySidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <div class="sidebar-content">
-        <h2 style="color: #00ffcc;">📈 Overzicht</h2>
-        <div id="sidebar-summary"></div>
-    </div>
+    <div class="sidebar-content"><h2 style="color: #00ffcc;">📊 Overzicht</h2><div id="sidebar-summary"></div></div>
 </div>
 
 <button class="openbtn" id="openbtn" onclick="openNav()" style="display:none;">&#9776; Overzicht</button>
+<button id="backToTop" onclick="scrollToTop()">↑</button>
 
 <div class="container" id="main">
-    <h1>🎮 Mijn Game Collectie</h1>
-    
+    <h1>🎮 Mijn Game & Hardware Collectie</h1>
     <div class="upload-box" id="full-upload-box">
         <h3>Geen database gevonden</h3>
-        <div class="upload-wrapper" style="justify-content: center;">
-            <label class="mini-upload" style="font-size: 1.2em; padding: 15px 30px;">
-                📁 Selecteer Excel Bestand
-                <input type="file" id="upload-large" accept=".xlsx">
-            </label>
+        <div class="header-controls">
+            <label class="mini-upload" style="font-size: 1.2em; padding: 15px 30px;">📂 Selecteer Excel Bestand<input type="file" id="upload-large" accept=".xlsx" style="display:none;"></label>
             <button class="info-btn" onclick="openModal()">i</button>
         </div>
     </div>
-
     <div class="header-controls" id="controls" style="display: none;">
         <div class="search-container">
-            <input type="text" id="search-input" placeholder="Zoek een spel...">
+            <input type="text" id="search-input" placeholder="Zoek door de hele collectie...">
             <button id="clear-search">&times;</button>
         </div>
-        <div class="upload-wrapper">
-            <label class="mini-upload">📁 Wissel Database<input type="file" id="upload" accept=".xlsx"></label>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <label class="mini-upload">📂 Wissel Database<input type="file" id="upload" accept=".xlsx" style="display:none;"></label>
             <button class="info-btn" onclick="openModal()">i</button>
         </div>
     </div>
-
     <div id="tabs" class="tabs"></div>
     <div id="content"></div>
 </div>
@@ -118,147 +160,231 @@
 <script>
     const searchInput = document.getElementById('search-input');
     const clearBtn = document.getElementById('clear-search');
-    const fullUploadBox = document.getElementById('full-upload-box');
-    const controls = document.getElementById('controls');
-    const openBtn = document.getElementById('openbtn');
+    const bttBtn = document.getElementById("backToTop");
+    const extensions = ['png', 'svg', 'webp', 'jpg', 'jpeg'];
+    let lastActiveTabId = null;
 
+    function getLogoPath(consoleName) {
+        let name = (consoleName || "").trim();
+        let lowerName = name.toLowerCase();
+        if (lowerName === 'pc' || lowerName.includes('steam') || lowerName.includes('epic') || lowerName.includes('gog')) {
+             if (lowerName.includes('steam')) name = 'STEAM';
+             else if (lowerName.includes('epic')) name = 'epic';
+             else if (lowerName.includes('gog')) name = 'GOG';
+             else name = 'PC';
+        }
+        return `Logo/${name}-logo`;
+    }
+
+    function handleImgError(img, isHardware) {
+        if (img.src.includes('TEMP-logo.webp') || img.src.includes('HARDWARE-logo.png')) {
+            img.onerror = null;
+            img.style.visibility = (img.src.includes('TEMP-logo.webp') && !isHardware) ? 'hidden' : 'visible';
+            return;
+        }
+        let currentSrc = img.src;
+        let baseWithExt = currentSrc.split('/').pop();
+        let baseName = baseWithExt.substring(0, baseWithExt.lastIndexOf('.'));
+        let currentExt = baseWithExt.split('.').pop().toLowerCase();
+        let idx = extensions.indexOf(currentExt);
+        if (idx !== -1 && idx < extensions.length - 1) {
+            img.src = `Logo/${baseName}.${extensions[idx + 1]}`;
+        } else {
+            img.onerror = null;
+            img.src = isHardware ? 'Logo/HARDWARE-logo.png' : 'Logo/TEMP-logo.webp';
+        }
+    }
+
+    window.onscroll = function() { bttBtn.style.display = (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) ? "block" : "none"; };
+    function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
     function openModal() { document.getElementById("infoModal").style.display = "block"; }
     function closeModal() { document.getElementById("infoModal").style.display = "none"; }
     function openNav() { document.getElementById("mySidebar").style.width = "350px"; document.getElementById("main").style.marginLeft = "350px"; }
     function closeNav() { document.getElementById("mySidebar").style.width = "0"; document.getElementById("main").style.marginLeft = "auto"; }
-
-    window.addEventListener('DOMContentLoaded', () => {
-        fetch('database.xlsx').then(res => res.arrayBuffer()).then(data => processAndRender(XLSX.read(new Uint8Array(data), {type: 'array'}))).catch(e => {});
-    });
 
     document.getElementById('upload').addEventListener('change', handleUpload);
     document.getElementById('upload-large').addEventListener('change', handleUpload);
 
     function handleUpload(e) {
         const reader = new FileReader();
-        reader.onload = (ev) => processAndRender(XLSX.read(new Uint8Array(ev.target.result), {type: 'array'}));
+        reader.onload = (ev) => processData(XLSX.read(new Uint8Array(ev.target.result), {type: 'array'}));
         reader.readAsArrayBuffer(e.target.files[0]);
     }
 
-    function processAndRender(workbook) {
-        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        fullUploadBox.style.display = 'none';
-        controls.style.display = 'flex';
-        openBtn.style.display = 'block';
-        renderCollectie(json);
+    function processData(workbook) {
+        let games = []; let hardware = [];
+        workbook.SheetNames.forEach(name => {
+            const data = XLSX.utils.sheet_to_json(workbook.Sheets[name], { defval: "" });
+            if (name.toLowerCase().includes("hardware") || name.toLowerCase().includes("consoles")) hardware = hardware.concat(data);
+            else games = games.concat(data);
+        });
+        document.getElementById('full-upload-box').style.display = 'none';
+        document.getElementById('controls').style.display = 'flex';
+        document.getElementById('openbtn').style.display = 'block';
+        render(games, hardware);
     }
 
-    function renderCollectie(data) {
-        const groups = {};
-        data.forEach(row => {
-            const c = row.Console || "Onbekend";
-            if (!groups[c]) groups[c] = { games: [] };
-            groups[c].games.push(row);
-        });
-
-        const allConsoles = Object.keys(groups).sort();
-        const isNintendo = (n) => { const l = n.toLowerCase(); return l.includes('nintendo') || l.includes('switch') || l.includes('ds') || l.includes('gba') || l.includes('gb') || l.includes('wii') || l.includes('gamecube'); };
-        const isPS = (n) => n.toLowerCase().includes('ps') || n.toLowerCase().includes('playstation');
-        const isPC = (n) => n.toLowerCase().includes('pc') || n.toLowerCase().includes('steam');
-        const isXbox = (n) => n.toLowerCase().includes('xbox');
-
-        const families = [
-            { name: "PlayStation Family", list: allConsoles.filter(isPS), style: "ps-group" },
-            { name: "Nintendo World", list: allConsoles.filter(isNintendo), style: "nintendo-group" },
-            { name: "PC Gaming", list: allConsoles.filter(isPC), style: "pc-group" },
-            { name: "Xbox Family", list: allConsoles.filter(isXbox), style: "xbox-group" }
-        ];
-
-        const groupedSet = new Set();
-        families.forEach(f => f.list.forEach(c => groupedSet.add(c)));
-        const others = allConsoles.filter(c => !groupedSet.has(c));
-
-        // Sidebar Summary
-        const sidebarSum = document.getElementById('sidebar-summary');
-        let totalVal = 0, totalGames = 0, sumHtml = `<table class="summary-table"><thead><tr><th>Console</th><th>Games</th><th>Waarde</th></tr></thead><tbody>`;
-        allConsoles.forEach(c => {
-            const cVal = groups[c].games.reduce((s, g) => s + Number(g.Prijs || 0), 0);
-            totalVal += cVal; totalGames += groups[c].games.length;
-            sumHtml += `<tr><td>${c}</td><td>${groups[c].games.length}</td><td>€${cVal.toFixed(2)}</td></tr>`;
-        });
-        sidebarSum.innerHTML = sumHtml + `<tr style="font-weight:bold; color:#00ffcc;"><td>TOTAAL</td><td>${totalGames}</td><td>€${totalVal.toFixed(2)}</td></tr></tbody></table>`;
-
+    function render(games, hardware) {
         const tabs = document.getElementById('tabs');
         const content = document.getElementById('content');
         tabs.innerHTML = ""; content.innerHTML = "";
+        const groups = {};
+        games.forEach(row => {
+            if(!row.Console) return;
+            if (!groups[row.Console]) groups[row.Console] = { items: [] };
+            groups[row.Console].items.push(row);
+        });
 
-        families.forEach((f, idx) => { if (f.list.length > 0) createTab(f.name, f.list, groups, f.style, idx === 0); });
-        others.forEach(name => createTab(name, [name], groups, "", tabs.children.length === 0));
+        const families = [
+            { name: "PlayStation Family", match: ['ps', 'playstation', 'psp', 'vita'], style: "ps-group", active: "ps-active" },
+            { name: "Nintendo World", match: ['nintendo', 'switch', 'ds', 'wii', 'gb', 'gba', 'gameboy', 'nes', 'snes', 'cube', 'n64'], style: "nintendo-group", active: "nintendo-active" },
+            { name: "Xbox Family", match: ['xbox'], style: "xbox-group", active: "xbox-active" },
+            { name: "PC Gaming", match: ['pc', 'steam', 'epic', 'gog'], style: "pc-group", active: "pc-active" }
+        ];
 
-        function createTab(tabName, consoleList, sourceData, extraClass, isActive) {
-            const tabId = 'tab-' + tabs.children.length;
-            const btn = document.createElement('button');
-            btn.className = 'tab-button' + (isActive ? ' active' : '');
-            btn.innerText = tabName;
-            btn.dataset.tabId = tabId;
-            btn.onclick = () => {
-                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.console-content').forEach(c => c.classList.remove('active'));
-                btn.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
-                // Reset console filters bij tab wissel
-                document.querySelectorAll(`#${tabId} .group-section`).forEach(s => s.classList.remove('hidden'));
-                document.querySelectorAll(`#${tabId} .filter-btn`).forEach(fb => fb.classList.remove('active'));
-            };
-            
-            const div = document.createElement('div');
-            div.id = tabId;
-            div.className = 'console-content' + (isActive ? ' active' : '');
+        families.forEach((f, idx) => {
+            const list = Object.keys(groups).filter(c => f.match.some(m => c.toLowerCase().includes(m))).sort();
+            if(list.length > 0) createTab(f.name, list, groups, f.style, idx === 0, f.active, false);
+        });
 
-            // Voeg de console filters toe
-            if (consoleList.length > 1) {
-                const fContainer = document.createElement('div');
-                fContainer.className = 'filter-container';
-                
-                const allBtn = document.createElement('button');
-                allBtn.className = 'filter-btn active';
-                allBtn.innerText = "Toon Alles";
-                allBtn.onclick = () => {
-                    div.querySelectorAll('.group-section').forEach(s => s.classList.remove('hidden'));
-                    fContainer.querySelectorAll('.filter-btn').forEach(fb => fb.classList.remove('active'));
-                    allBtn.classList.add('active');
-                };
-                fContainer.appendChild(allBtn);
-
-                consoleList.forEach(cName => {
-                    const fBtn = document.createElement('button');
-                    fBtn.className = 'filter-btn';
-                    fBtn.innerText = cName;
-                    fBtn.onclick = () => {
-                        div.querySelectorAll('.group-section').forEach(s => {
-                            s.classList.toggle('hidden', s.dataset.consoleName !== cName);
-                        });
-                        fContainer.querySelectorAll('.filter-btn').forEach(fb => fb.classList.remove('active'));
-                        fBtn.classList.add('active');
-                    };
-                    fContainer.appendChild(fBtn);
-                });
-                div.appendChild(fContainer);
-            }
-
-            consoleList.forEach(cName => {
-                const gData = sourceData[cName];
-                gData.games.sort((a,b) => (a.Game_Titel||"").localeCompare(b.Game_Titel||""));
-                const rows = gData.games.map(g => `<tr class="game-row" data-title="${(g.Game_Titel||"").toLowerCase()}"><td>${g.Foto_URL ? `<img src="${g.Foto_URL}" class="game-thumb" onerror="this.style.display='none'">` : 'N/A'}</td><td>${g.Game_Titel}</td><td>€${Number(g.Prijs||0).toFixed(2)}</td></tr>`).join('');
-                const sec = document.createElement('div');
-                sec.className = 'group-section ' + extraClass;
-                sec.dataset.consoleName = cName;
-                sec.innerHTML = `<h2>${cName}</h2><table><thead><tr><th>Foto</th><th>Game</th><th>Prijs</th></tr></thead><tbody>${rows}</tbody></table>`;
-                div.appendChild(sec);
+        if(hardware.length > 0) {
+            const hwGroups = {};
+            hardware.forEach(row => {
+                const cat = row.Hardware || "Overig";
+                if(!hwGroups[cat]) hwGroups[cat] = { items: [] };
+                hwGroups[cat].items.push(row);
             });
-            tabs.appendChild(btn);
-            content.appendChild(div);
+            createTab("🕹️ Hardware", Object.keys(hwGroups).sort(), hwGroups, "hardware-group", false, "hardware-active", true);
+        }
+        updateSidebar(groups, hardware);
+    }
+
+    function createTab(title, consoleList, source, borderClass, isActive, activeClass, isHardware) {
+        const id = 'tab-' + Math.random().toString(36).substr(2, 9);
+        const btn = document.createElement('button');
+        btn.className = 'tab-button' + (isActive ? ' ' + activeClass : '');
+        
+        // Specifieke klasse voor de hardware tab
+        if (isHardware) {
+            btn.classList.add('hardware-tab-special');
+        }
+
+        btn.innerText = title;
+        btn.dataset.tabId = id;
+        btn.dataset.activeClass = activeClass;
+        
+        if (isActive) lastActiveTabId = id;
+
+        btn.onclick = () => {
+            if (searchInput.value.trim() !== "") return;
+            lastActiveTabId = id;
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active', 'ps-active', 'nintendo-active', 'xbox-active', 'pc-active', 'hardware-active'));
+            document.querySelectorAll('.console-content').forEach(c => {
+                c.classList.remove('active');
+                c.style.display = 'none';
+            });
+            btn.classList.add(activeClass);
+            const target = document.getElementById(id);
+            target.classList.add('active');
+            target.style.display = 'block';
+
+            const filterContainer = target.querySelector('.filter-container');
+            if (filterContainer) {
+                filterContainer.querySelectorAll('.filter-btn').forEach(fb => fb.classList.remove('active'));
+                const allBtn = filterContainer.querySelector('.filter-btn-all');
+                if (allBtn) allBtn.classList.add('active');
+                target.querySelectorAll('.group-section').forEach(s => s.classList.remove('hidden'));
+            }
+        };
+
+        const div = document.createElement('div');
+        div.id = id; div.className = 'console-content ' + activeClass.replace('-active', '-active-style');
+        if (isActive) { div.classList.add('active'); div.style.display = 'block'; }
+
+        const filterContainer = document.createElement('div');
+        filterContainer.className = 'filter-container';
+        filterContainer.style.cssText = "margin-bottom:20px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;";
+        
+        const allBtn = document.createElement('button');
+        allBtn.className = 'tab-button active filter-btn filter-btn-all';
+        allBtn.innerText = "Toon Alles";
+        allBtn.onclick = () => {
+            filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            allBtn.classList.add('active');
+            div.querySelectorAll('.group-section').forEach(s => s.classList.remove('hidden'));
+        };
+        filterContainer.appendChild(allBtn);
+
+        consoleList.forEach(name => {
+            const fBtn = document.createElement('button');
+            fBtn.className = 'tab-button filter-btn';
+            fBtn.innerText = name;
+            fBtn.onclick = () => {
+                filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                fBtn.classList.add('active');
+                div.querySelectorAll('.group-section').forEach(s => s.classList.toggle('hidden', s.dataset.name !== name));
+            };
+            filterContainer.appendChild(fBtn);
+
+            const sec = document.createElement('div');
+            sec.className = 'group-section ' + borderClass;
+            sec.dataset.name = name;
+            let items = [...source[name].items].sort((a,b) => ((isHardware ? a.Hardware_Titel : a.Game_Titel)||"").localeCompare((isHardware ? b.Hardware_Titel : b.Game_Titel)||""));
+            let html = `<h3>${name}</h3><table class="main-table"><thead>`;
+            if(isHardware) {
+                html += `<tr><th>Type</th><th>Logo</th><th>Naam</th><th>Info</th><th>Prijs</th></tr></thead><tbody>`;
+                html += items.map(h => `<tr class="game-row" data-title="${(h.Hardware_Titel||"").toLowerCase()}"><td>${h.Hardware}</td><td class="col-foto"><img src="${getLogoPath(h.Hardware)}.png" class="hardware-thumb" onerror="handleImgError(this, true)"></td><td style="font-weight:bold;">${h.Hardware_Titel}</td><td>${h.Extra || ""}</td><td style="color:#ffcc00; font-weight:bold;">€${Number(h.Prijs||0).toFixed(2)}</td></tr>`).join('');
+            } else {
+                html += `<tr><th class="col-foto">Logo</th><th>Titel</th><th class="col-prijs">Prijs</th></tr></thead><tbody>`;
+                html += items.map(g => `<tr class="game-row" data-title="${(g.Game_Titel||"").toLowerCase()}"><td class="col-foto"><img src="${getLogoPath(g.Console)}.png" class="game-thumb" onerror="handleImgError(this, false)"></td><td>${g.Game_Titel}</td><td class="col-prijs">${g.Digital === 'x' ? '' : '€'+Number(g.Prijs||0).toFixed(2)}${g.Digital === 'x' ? ' 💾 <span class="digital-label">digital game</span>' : ''}${g.Extra ? `<span class="extra-info-trigger">💬<span class="tooltip-text">${g.Extra}</span></span>` : ''}</td></tr>`).join('');
+            }
+            sec.innerHTML = html + `</tbody></table>`;
+            div.appendChild(sec);
+        });
+        div.prepend(filterContainer);
+        tabs.appendChild(btn);
+        content.appendChild(div);
+    }
+
+    function resetSearch() {
+        searchInput.value = "";
+        clearBtn.style.display = "none";
+        document.getElementById('tabs').classList.remove('searching-active');
+
+        document.querySelectorAll('.console-content').forEach(tabDiv => {
+            tabDiv.classList.remove('searching', 'active');
+            tabDiv.style.display = 'none';
+            tabDiv.querySelectorAll('.group-section, .game-row').forEach(el => el.classList.remove('hidden'));
+            const filterContainer = tabDiv.querySelector('.filter-container');
+            if (filterContainer) {
+                filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                const allBtn = filterContainer.querySelector('.filter-btn-all');
+                if (allBtn) allBtn.classList.add('active');
+            }
+        });
+
+        document.querySelectorAll('.tab-button').forEach(b => {
+            b.style.opacity = "1";
+            b.classList.remove('active', 'ps-active', 'nintendo-active', 'xbox-active', 'pc-active', 'hardware-active');
+        });
+
+        if (lastActiveTabId) {
+            const activeBtn = document.querySelector(`[data-tab-id="${lastActiveTabId}"]`);
+            const activeContent = document.getElementById(lastActiveTabId);
+            if (activeBtn && activeContent) {
+                activeBtn.classList.add(activeBtn.dataset.activeClass);
+                activeContent.classList.add('active');
+                activeContent.style.display = 'block';
+            }
         }
     }
 
     function applySearch() {
-        const term = searchInput.value.toLowerCase();
-        clearBtn.style.display = term ? "block" : "none";
+        const term = searchInput.value.toLowerCase().trim();
+        if (term === "") { resetSearch(); return; }
+        clearBtn.style.display = "block";
+        document.getElementById('tabs').classList.add('searching-active');
+
         document.querySelectorAll('.console-content').forEach(tabDiv => {
             let tabMatch = false;
             tabDiv.querySelectorAll('.group-section').forEach(sec => {
@@ -268,17 +394,31 @@
                     row.classList.toggle('hidden', !match);
                     if (match) secMatch = tabMatch = true;
                 });
-                // In zoekmodus negeren we de handmatige console-filters even om alles te vinden
                 sec.classList.toggle('hidden', !secMatch);
             });
             const btn = document.querySelector(`[data-tab-id="${tabDiv.id}"]`);
-            if (btn) btn.classList.toggle('no-results', term && !tabMatch);
-            if (term && tabMatch) tabDiv.classList.add('searching'); else tabDiv.classList.remove('searching');
+            if (btn) btn.style.opacity = tabMatch ? "1" : "0.3";
+            tabDiv.style.display = tabMatch ? 'block' : 'none';
+            if (tabMatch) tabDiv.classList.add('searching');
         });
     }
 
+    function updateSidebar(groups, hardware) {
+        let totalVal = 0; let totalGames = 0;
+        let html = `<table><tr><th>Systeem</th><th>Aantal</th><th>Waarde</th></tr>`;
+        Object.keys(groups).sort().forEach(c => {
+            const val = groups[c].items.reduce((s, g) => s + (g.Digital === 'x' ? 0 : Number(g.Prijs||0)), 0);
+            totalVal += val; totalGames += groups[c].items.length;
+            html += `<tr><td>${c}</td><td>${groups[c].items.length}</td><td>€${val.toFixed(2)}</td></tr>`;
+        });
+        const hwVal = hardware.reduce((s, h) => s + Number(h.Prijs||0), 0);
+        html += `<tr style="color:#ffcc00;"><td>Hardware</td><td>${hardware.length}</td><td>€${hwVal.toFixed(2)}</td></tr>`;
+        html += `<tr style="font-weight:bold; color:#00ffcc; border-top:2px solid #333;"><td>TOTAAL</td><td>${totalGames + hardware.length}</td><td>€${(totalVal+hwVal).toFixed(2)}</td></tr></table>`;
+        document.getElementById('sidebar-summary').innerHTML = html;
+    }
+
     searchInput.addEventListener('input', applySearch);
-    clearBtn.onclick = () => { searchInput.value = ""; applySearch(); };
+    clearBtn.onclick = resetSearch;
 </script>
 </body>
 </html>
