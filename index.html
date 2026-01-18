@@ -181,6 +181,29 @@
             });
     });
 
+    // Luister naar Escape toets voor alles (modal, zoekopdracht én sidebar)
+    window.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            // 1. Sluit modal als deze open is
+            const modal = document.getElementById("infoModal");
+            if (modal.style.display === "block") {
+                closeModal();
+            }
+            
+            // 2. Sluit sidebar (overzichttabel) als deze open is
+            const sidebar = document.getElementById("mySidebar");
+            if (sidebar.style.width !== "0px" && sidebar.style.width !== "") {
+                closeNav();
+            }
+
+            // 3. Reset zoekopdracht als er tekst in staat of als er gezocht wordt
+            if (searchInput.value !== "" || document.getElementById('tabs').classList.contains('searching-active')) {
+                resetSearch();
+                searchInput.blur();
+            }
+        }
+    });
+
     function getLogoPath(consoleName) {
         let name = (consoleName || "").trim();
         let lowerName = name.toLowerCase();
@@ -214,10 +237,26 @@
 
     window.onscroll = function() { bttBtn.style.display = (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) ? "block" : "none"; };
     function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
-    function openModal() { document.getElementById("infoModal").style.display = "block"; }
-    function closeModal() { document.getElementById("infoModal").style.display = "none"; }
-    function openNav() { document.getElementById("mySidebar").style.width = "350px"; document.getElementById("main").style.marginLeft = "350px"; }
-    function closeNav() { document.getElementById("mySidebar").style.width = "0"; document.getElementById("main").style.marginLeft = "auto"; }
+    
+    function openModal() { 
+        document.getElementById("infoModal").style.display = "block";
+        document.body.style.overflow = "hidden";
+    }
+    
+    function closeModal() { 
+        document.getElementById("infoModal").style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+
+    function openNav() { 
+        document.getElementById("mySidebar").style.width = "350px"; 
+        document.getElementById("main").style.marginLeft = "350px"; 
+    }
+    
+    function closeNav() { 
+        document.getElementById("mySidebar").style.width = "0"; 
+        document.getElementById("main").style.marginLeft = "auto"; 
+    }
 
     document.getElementById('upload').addEventListener('change', handleUpload);
     document.getElementById('upload-large').addEventListener('change', handleUpload);
@@ -435,5 +474,4 @@
     clearBtn.onclick = resetSearch;
 </script>
 </body>
-
 </html>
