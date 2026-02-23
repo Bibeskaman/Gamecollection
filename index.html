@@ -106,15 +106,9 @@
 
         /* Grid Layout Opschoning & Logica */
         .view-table .grid-container, .view-table .grid-family-title { display: none !important; }
-        
-        /* Grid Layout: Verberg Tabel-elementen */
         .view-grid .main-table { display: none !important; }
-        
-        /* Titels in Grid Layout */
-        .view-grid .group-section h3 { display: block; } /* Toon titels per console */
-        .view-grid .grid-family-title { display: block !important; } /* Toon familie-titels bij Hardware */
-
-        /* SPECIFIEKE FIX: Verberg alles wat niet grid-related is als grid-view actief is */
+        .view-grid .group-section h3 { display: block; } 
+        .view-grid .grid-family-title { display: block !important; } 
         .view-grid .group-section:not(:has(.card)) { display: none !important; }
         .view-grid .group-section:not(:has(.card)) h3 { display: none !important; }
 
@@ -190,7 +184,7 @@
 <div class="container" id="main">
     <h1>🎮 Mijn Game & Hardware Collectie</h1>
     <div class="upload-box" id="full-upload-box" style="padding: 40px; border: 2px dashed #00ffcc; border-radius: 15px; background: #1e1e1e; margin-bottom: 30px;">
-        <h3>Database laden...</h3>
+        <h3 id="upload-status">Geen database gevonden</h3>
         <div class="header-controls">
             <label style="background: #1e1e1e; border: 1px solid #333; padding: 15px 30px; border-radius: 8px; cursor: pointer; color: #00ffcc;">📂 Handmatig Excel Selecteren<input type="file" id="upload-large" accept=".xlsx" style="display:none;"></label>
             <button class="info-btn" onclick="openModal()">i</button>
@@ -216,6 +210,23 @@
     const bttBtn = document.getElementById("backToTop");
     const extensions = ['png', 'svg', 'webp', 'jpg', 'jpeg'];
     let lastActiveTabId = null;
+
+    // AUTO LOAD LOGIC
+    window.onload = function() {
+        const dbFile = 'database.xlsx';
+        fetch(dbFile)
+            .then(response => {
+                if (response.ok) return response.arrayBuffer();
+                throw new Error('Not found');
+            })
+            .then(data => {
+                processData(XLSX.read(new Uint8Array(data), {type: 'array'}));
+            })
+            .catch(err => {
+                console.log("Geen automatisch databasebestand gevonden (database.xlsx).");
+                document.getElementById('upload-status').innerText = "Geen database gevonden";
+            });
+    };
 
     function setLayout(mode) {
         document.body.className = 'view-' + mode;
